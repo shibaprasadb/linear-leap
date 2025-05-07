@@ -1,0 +1,141 @@
+/* LinearLeap CSS styles */
+
+/* Main theme colors */
+:root {
+    --primary: #4285F4;  /* Blue */
+    --secondary: #34A853;  /* Green */
+    --accent: #FBBC05;  /* Yellow */
+    --error: #EA4335;  /* Red */
+    --background: #F9F9F9;
+    --text: #202124;
+}
+
+/* Global styles */
+.stApp {
+    font-family: 'Roboto', sans-serif;
+}
+
+/* Main header styles */
+h1 {
+    color: var(--primary);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary);
+}
+
+h2 {
+    color: var(--primary);
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+h3 {
+    color: var(--secondary);
+    margin-top: 15px;
+    margin-bottom: 8px;
+}
+
+/* Button customization */
+.stButton>button {
+    background-color: var(--primary);
+    color: white;
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s;
+}
+
+.stButton>button:hover {
+    background-color: #3674e7;
+    transform: translateY(-2px);
+}
+
+/* Custom card for key metrics */
+.metric-card {
+    background-color: white;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+.metric-card h4 {
+    margin-top: 0;
+    color: var(--primary);
+}
+
+/* Status indicators */
+.status-success {
+    color: var(--secondary);
+    font-weight: bold;
+}
+
+.status-warning {
+    color: var(--accent);
+    font-weight: bold;
+}
+
+.status-error {
+    color: var(--error);
+    font-weight: bold;
+}
+
+/* Navigation customization */
+.nav-link {
+    text-decoration: none;
+    color: var(--text);
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.nav-link:hover {
+    background-color: rgba(66, 133, 244, 0.1);
+}
+
+.nav-link.active {
+    background-color: var(--primary);
+    color: white;
+}
+
+/* Container styling */
+.content-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+/* Input field styling */
+.stTextInput>div>div>input, .stNumberInput>div>div>input {
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.stTextInput>div>div>input:focus, .stNumberInput>div>div>input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+/* Dataframe styling */
+.dataframe-container th {
+    background-color: var(--primary);
+    color: white;
+}
+
+.dataframe-container tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.dataframe-container tr:hover {
+    background-color: #e0e0e0;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.8rem;
+    color: #666;
+    border-top: 1px solid #eee;
+    margin-top: 40px;
+}
