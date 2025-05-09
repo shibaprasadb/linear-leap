@@ -16,7 +16,7 @@ def show_landing_page():
         - Perform linear and multilinear regression analysis
         - Visualize relationships between variables
         - Get detailed statistical insights and predictions
-        - Receive tailored recommendations based on your data
+        - Receive tailored recommendations based on your data (GenAI generated)
         
         Get started by clicking the button below!
         """)
