@@ -66,16 +66,6 @@ LinearLeap/
     └── styles.css             # Custom styling
 ```
 
-## Requirements
-
-- Python 3.8+
-- Streamlit
-- Pandas
-- NumPy
-- Matplotlib
-- Seaborn
-- Scikit-learn
-- SciPy
 
 ## Contributing
 
