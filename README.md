@@ -71,10 +71,6 @@ LinearLeap/
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## Contact
 
 If you have any questions or feedback, please reach out to shibaprasad.b.mail@gmail.com
