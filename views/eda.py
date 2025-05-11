@@ -16,7 +16,7 @@ def show_eda():
         st.warning("No data available. Please upload data in the Data Input section.")
         if st.button("Go to Data Input"):
             st.session_state.view = "data_input"
-            st.experimental_rerun()
+            st.rerun()  # FIXED: Changed from st.experimental_rerun()
         return
     
     data = st.session_state.data
@@ -29,7 +29,7 @@ def show_eda():
         st.warning("Target or input variables not selected. Please complete variable selection in Data Input section.")
         if st.button("Go to Data Input"):
             st.session_state.view = "data_input"
-            st.experimental_rerun()
+            st.rerun()  # FIXED: Changed from st.experimental_rerun()
         return
     
     # Display different EDA based on regression type
@@ -42,7 +42,7 @@ def show_eda():
     st.markdown("---")
     if st.button("Proceed to Model Training", key="proceed_to_training", use_container_width=True):
         st.session_state.view = "model_training"
-        st.experimental_rerun()
+        st.rerun()  # FIXED: Changed from st.experimental_rerun()
 
 def show_linear_eda(data, input_var, target_var):
     """
