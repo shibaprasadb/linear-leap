@@ -2,14 +2,6 @@
 Configuration file for the LinearLeap application.
 """
 
-# Streamlit page configuration
-PAGE_CONFIG = {
-    "page_title": "LinearLeap",
-    "page_icon": "📈",
-    "layout": "wide",
-    "initial_sidebar_state": "expanded",
-}
-
 # Application theme colors
 COLORS = {
     "primary": "#4285F4",  # Blue

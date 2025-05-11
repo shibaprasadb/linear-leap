@@ -6,6 +6,8 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+from utils.ui_components import show_footer
+
 
 def show_model_training():
     """
@@ -263,3 +265,7 @@ def train_multilinear_model(data, input_vars, target_var):
             
             st.markdown(f"**Intercept:** {model.intercept_:.4f}")
             st.markdown(f"**R² (test set):** {test_metrics['R²']:.4f}")
+
+
+# Add footer
+show_footer()

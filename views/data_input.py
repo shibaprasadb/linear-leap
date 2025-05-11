@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+from utils.ui_components import show_footer
 
 def show_data_input():
     """
@@ -111,6 +112,8 @@ def show_data_input():
                 load_multilinear_sample_data()
                 st.success("Multiple linear regression sample data loaded!")
                 st.rerun()  # FIXED: Changed from st.experimental_rerun()
+    # Add footer
+    show_footer()
 
 def load_linear_sample_data():
     """
@@ -155,3 +158,5 @@ def load_multilinear_sample_data():
     st.session_state.target_column = 'Target'
     st.session_state.input_columns = ['Feature1', 'Feature2', 'Feature3']
     st.session_state.regression_type = 'multilinear'
+
+

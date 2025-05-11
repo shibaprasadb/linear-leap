@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from utils.ui_components import show_footer
 
 def show_results():
     """
@@ -54,6 +55,8 @@ def show_results():
     if st.button("View Recommendations", key="proceed_to_recommendation", use_container_width=True):
         st.session_state.view = "recommendation"
         st.rerun()
+    # Add footer
+    show_footer()
 
 def show_linear_summary():
     """
@@ -180,3 +183,5 @@ def assess_model_quality(r2):
     """
     st.markdown("#### Model Quality Assessment")
     st.info("This is a placeholder for model quality assessment.")
+
+
