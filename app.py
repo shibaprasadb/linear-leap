@@ -1,5 +1,15 @@
 import streamlit as st
-from config import PAGE_CONFIG
+
+# Setup page configuration FIRST, before any other imports or Streamlit commands
+st.set_page_config(
+    page_title="LinearLeap",
+    page_icon="📈",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# Import everything else AFTER setting the page config
+#from config import PAGE_CONFIG
 from navigation.navbar import display_navigation_banner
 from views.landing import show_landing_page
 from views.data_input import show_data_input
@@ -7,9 +17,6 @@ from views.eda import show_eda
 from views.model_training import show_model_training
 from views.results import show_results
 from views.recommendations import show_recommendation
-
-# Setup page configuration
-st.set_page_config(**PAGE_CONFIG)
 
 # Initialize session state
 if 'page' not in st.session_state:
@@ -53,3 +60,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+

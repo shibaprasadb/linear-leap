@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from utils.ui_components import show_footer
 
 def show_eda():
     """
@@ -43,6 +44,8 @@ def show_eda():
     if st.button("Proceed to Model Training", key="proceed_to_training", use_container_width=True):
         st.session_state.view = "model_training"
         st.rerun()  # FIXED: Changed from st.experimental_rerun()
+    # Add footer
+    show_footer()
 
 def show_linear_eda(data, input_var, target_var):
     """

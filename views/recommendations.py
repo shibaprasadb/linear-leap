@@ -1,4 +1,5 @@
 import streamlit as st
+from utils.ui_components import show_footer
 
 def show_recommendation():
     """
@@ -51,6 +52,8 @@ def show_recommendation():
     
     with col2:
         st.button("Export Results (Coming Soon)", key="export_results", use_container_width=True, disabled=True)
+    # Add footer
+    show_footer()
 
 def show_linear_recommendations():
     """
