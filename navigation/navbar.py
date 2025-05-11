@@ -50,7 +50,7 @@ def display_navigation_banner():
                 type=button_style,
             ):
                 st.session_state.view = option["view"]
-                st.experimental_rerun()
+                st.rerun()  # FIXED: Changed from st.experimental_rerun()
     
     # Display current section title
     current_view = st.session_state.view

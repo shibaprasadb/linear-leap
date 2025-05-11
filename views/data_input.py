@@ -88,7 +88,7 @@ def show_data_input():
                 
                 # Auto-navigate to next step
                 st.session_state.view = "eda"
-                st.experimental_rerun()
+                st.rerun()  # FIXED: Changed from st.experimental_rerun()
                 
         except Exception as e:
             st.error(f"Error loading data: {e}")
@@ -104,13 +104,13 @@ def show_data_input():
             if st.button("Load Simple Linear Sample", key="linear_sample", use_container_width=True):
                 load_linear_sample_data()
                 st.success("Linear regression sample data loaded!")
-                st.experimental_rerun()
+                st.rerun()  # FIXED: Changed from st.experimental_rerun()
                 
         with col2:
             if st.button("Load Multiple Linear Sample", key="multilinear_sample", use_container_width=True):
                 load_multilinear_sample_data()
                 st.success("Multiple linear regression sample data loaded!")
-                st.experimental_rerun()
+                st.rerun()  # FIXED: Changed from st.experimental_rerun()
 
 def load_linear_sample_data():
     """
