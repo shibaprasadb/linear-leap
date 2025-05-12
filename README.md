@@ -19,7 +19,7 @@ LinearLeap is an interactive web application built with Python that makes regres
 
 ```bash
 # Clone the repository
-git clone https://github.com/username/linear-leap.git
+git clone https://github.com/shibaprasadb/linear-leap.git
 cd linear-leap
 
 # Create a virtual environment (optional but recommended)
@@ -61,7 +61,8 @@ LinearLeap/
 │   └── recommendation.py      # Recommendations and insights
 ├── utils/
 │   ├── linear_regression.py   # Linear regression utilities
-│   └── multilinear_regression.py  # Multilinear regression utilities
+│   ├── multilinear_regression.py  # Multilinear regression utilities
+│   └── ui_components.py       # File with the footer and other UI components
 └── assets/
     └── styles.css             # Custom styling
 ```
