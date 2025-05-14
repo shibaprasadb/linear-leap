@@ -7,7 +7,7 @@ from scipy import stats
 from utils.plot_analysis import plot_to_pil, generate_text_with_image, image_to_bytes
 
 # Add your API key here
-GEMINI_API_KEY = "AIzaSyC2jIieJ5zjj5Fb9cH89hkBO7-V3_WICL0"
+GEMINI_API_KEY = "XYZ"
 GEMINI_MODEL_NAME="gemini-2.0-flash"
 
 def show_eda():
