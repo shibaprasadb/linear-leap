@@ -4,11 +4,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
+import os
+
 from utils.plot_analysis import plot_to_pil, generate_text_with_image, image_to_bytes
 
-# Add your API key here
-GEMINI_API_KEY = "XYZ"
-GEMINI_MODEL_NAME="gemini-2.0-flash"
+# Get API key from Streamlit secrets
+GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY")
+GEMINI_MODEL_NAME = "gemini-2.0-flash"
+
+if not GEMINI_API_KEY:
+    st.warning("GEMINI_API_KEY not found in environment variables. Some features may not work.")
 
 def show_eda():
     """
