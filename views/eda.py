@@ -4,6 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
+from utils.plot_analysis import plot_to_pil, generate_text_with_image, image_to_bytes
+
+# Add your API key here
+GEMINI_API_KEY = "AIzaSyC2jIieJ5zjj5Fb9cH89hkBO7-V3_WICL0"
+GEMINI_MODEL_NAME="gemini-2.0-flash"
 
 def show_eda():
     """
@@ -99,8 +104,6 @@ def detect_outliers(x, y, threshold=3.0):
         result['message'] = 'No outliers detected using z-score threshold of {}'.format(threshold)
     
     return result
-
-
 
 
 def show_linear_eda(data, input_var, target_var):
@@ -258,6 +261,42 @@ def show_linear_eda(data, input_var, target_var):
         
         plt.tight_layout()
         st.pyplot(fig)
+        
+        # AI Analysis of distributions
+        with st.spinner("Analyzing distributions with AI..."):
+            try:
+                # Save the current figure to pass to Gemini API
+                # We need to get the current figure object explicitly
+                current_fig = plt.gcf()  # Get current figure
+                
+                # Convert the matplotlib figure to PIL Image
+                pil_image = plot_to_pil(current_fig)
+                
+                # Define the prompt for Gemini
+                prompt = """
+                Summarise these distributions.
+
+                Check for these things: Are they multimodal, bimodal or normal? What could be the business implications of these?
+
+                Summarise them in short bullet points.
+
+                For each of these parameters make two bullet points:
+                Shape
+                Business Implications
+                """
+                
+                # Get AI analysis
+                ai_analysis = generate_text_with_image(prompt, pil_image, GEMINI_API_KEY, model_name=GEMINI_MODEL_NAME)
+                
+                # Display AI analysis
+                if ai_analysis:
+                    st.markdown("### Analysis of Distributions (GenAI generated) ")
+                    st.markdown(ai_analysis)
+                else:
+                    st.warning("AI analysis could not be generated. Please check your API key.")
+            except Exception as e:
+                st.error(f"Error generating AI analysis: {str(e)}")
+
 
 def show_multilinear_eda(data, input_vars, target_var):
     """
@@ -329,6 +368,41 @@ def show_multilinear_eda(data, input_vars, target_var):
         
         plt.tight_layout()
         st.pyplot(fig)
+        
+        # AI Analysis of distributions for multilinear
+        with st.spinner("Analyzing distributions with AI..."):
+            try:
+                # Save the current figure to pass to Gemini API
+                # We need to get the current figure object explicitly
+                current_fig = plt.gcf()  # Get current figure
+                
+                # Convert the matplotlib figure to PIL Image
+                pil_image = plot_to_pil(current_fig)
+                
+                # Define the prompt for Gemini
+                prompt = """
+                Summarise these distributions.
+
+                Check for these things: Are they multimodal, bimodal or normal? What could be the business implications of these?
+
+                Summarise them in short bullet points.
+
+                For each of these parameters make two bullet points:
+                Shape
+                Business Implications
+                """
+                
+                # Get AI analysis
+                ai_analysis = generate_text_with_image(prompt, pil_image, GEMINI_API_KEY)
+                
+                # Display AI analysis
+                if ai_analysis:
+                    st.markdown("### AI Analysis of Distributions")
+                    st.markdown(ai_analysis)
+                else:
+                    st.warning("AI analysis could not be generated. Please check your API key.")
+            except Exception as e:
+                st.error(f"Error generating AI analysis: {str(e)}")
         
         # Pairplot (optional for datasets with many variables)
         if len(input_vars) <= 5 and st.checkbox("Show pairplot (may be slow for large datasets)", value=False):

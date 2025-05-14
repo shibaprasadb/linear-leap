@@ -1,14 +1,14 @@
 import google.generativeai as genai
-import PIL.Image  # Import the PIL library
+import PIL.Image
 import matplotlib.pyplot as plt
 import numpy as np
 import io
 import base64
 
-API_KEY="xyz"
-plot = "yn"
+# Default API key - replace with your actual key or environment variable
+API_KEY = "your_api_key_here"
 
-def generate_text_with_image(prompt, image, api_key, model_name="gemini-2.0-flash"):
+def generate_text_with_image(prompt, image, api_key=API_KEY, model_name="gemini-2.0-flash"):
     """
     Generates text using the Gemini API, including an image.
 
@@ -28,7 +28,6 @@ def generate_text_with_image(prompt, image, api_key, model_name="gemini-2.0-flas
         model = genai.GenerativeModel(model_name)
 
         # Prepare the content with the image and text
-        # The key fix is in this structure
         image_part = {
             "inline_data": {
                 "mime_type": "image/jpeg",
@@ -59,7 +58,6 @@ def image_to_bytes(image):
     Returns:
       base64 encoded byte string.
     """
-    import base64
     buffered = io.BytesIO()
     # Check the image mode.  If it is RGBA, convert it to RGB.
     if image.mode in ("RGBA", "LA"):
@@ -69,7 +67,7 @@ def image_to_bytes(image):
     return base64.b64encode(img_bytes).decode('utf-8')
 
 
-def create_scatterplot():
+def create_sample_scatterplot():
     """
     Creates a sample scatter plot of house square footage vs. prices.
 
@@ -82,38 +80,50 @@ def create_scatterplot():
     prices = 100000 + square_footage * 150 + np.random.randint(-50000, 50000, 50)
 
     # Create the scatter plot
-    plt.figure(figsize=(8, 6))
-    plt.scatter(square_footage, prices, alpha=0.7)
-    plt.title("House Prices vs. Square Footage")
-    plt.xlabel("Square Footage (sq ft)")
-    plt.ylabel("Price (USD)")
-    plt.grid(True)
-    return plt
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.scatter(square_footage, prices, alpha=0.7)
+    ax.set_title("House Prices vs. Square Footage")
+    ax.set_xlabel("Square Footage (sq ft)")
+    ax.set_ylabel("Price (USD)")
+    ax.grid(True)
+    return fig
 
-def plot_to_pil(plot):
+def plot_to_pil(fig):
     """
-    Converts a matplotlib.pyplot plot to a PIL Image object.
+    Converts a matplotlib.pyplot figure object to a PIL Image object.
 
     Args:
-        plot: A matplotlib.pyplot figure object.
+        fig: A matplotlib.pyplot figure object.
 
     Returns:
         A PIL Image object of the plot.
     """
     # Save the plot to a BytesIO object
     buf = io.BytesIO()
-    plot.savefig(buf, format='png')
+    fig.savefig(buf, format='png')
     buf.seek(0)  # Important: Seek back to the beginning of the buffer!
-    plt.close(plot.gcf())  # Close the figure to free memory
+    plt.close(fig)  # Close the figure to free memory
     # Open the image from the BytesIO object using PIL
     img = PIL.Image.open(buf)
     return img
 
+# Define a default prompt for analyzing plots
+DEFAULT_PROMPT = """
+Summarize these distributions.
 
-image = plot_to_pil(plot)
+Check for these things: Are they multimodal, bimodal or normal? What could be the business implications of these?
 
-# Define the prompt
-prompt = "Summarise these distributions.Check for these things: Are they multimodal, bimodal or normal? What could be the business implications of these? Summarise them in short bullet points. For each of these parameters make two bullet points: Shape and Business Implications"
+Summarize them in short bullet points.
 
-# Generate text using the Gemini API
-generated_text = generate_text_with_image(prompt, image, API_KEY, model_name="gemini-2.0-flash")
+For each of these parameters make two bullet points:
+Shape
+Business Implications
+"""
+
+# This code only runs when script is directly executed, not when imported
+if __name__ == "__main__":
+    # Example usage
+    fig = create_sample_scatterplot()
+    image = plot_to_pil(fig)
+    generated_text = generate_text_with_image(DEFAULT_PROMPT, image, API_KEY)
+    print(generated_text)
