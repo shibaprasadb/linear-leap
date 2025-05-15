@@ -1,5 +1,6 @@
 import streamlit as st
 import base64
+import os
 
 def load_css():
     """
@@ -12,6 +13,51 @@ def load_css():
     except Exception as e:
         # If file doesn't exist, fail silently
         pass
+
+def set_page_favicon():
+    """
+    Set the page favicon using a more direct approach with JavaScript injection.
+    This works even when the normal page_icon approach fails.
+    """
+    try:
+        # Path to your logo
+        logo_path = "assets/LinearLeap_logo.png"
+        
+        # Check if file exists
+        if not os.path.exists(logo_path):
+            print(f"Favicon file not found: {logo_path}")
+            return
+            
+        # Read the image file and convert to base64
+        with open(logo_path, "rb") as f:
+            img_data = f.read()
+            b64_encoded = base64.b64encode(img_data).decode()
+        
+        # Create JavaScript to set the favicon dynamically
+        favicon_js = f"""
+        <script>
+            // Remove any existing favicons
+            var links = document.getElementsByTagName('link');
+            for (var i = 0; i < links.length; i++) {{
+                if (links[i].rel.includes('icon')) {{
+                    links[i].parentNode.removeChild(links[i]);
+                }}
+            }}
+            
+            // Create new favicon link
+            var link = document.createElement('link');
+            link.rel = 'icon';
+            link.type = 'image/png';
+            link.href = 'data:image/png;base64,{b64_encoded}';
+            document.getElementsByTagName('head')[0].appendChild(link);
+        </script>
+        """
+        
+        # Inject the JavaScript
+        st.markdown(favicon_js, unsafe_allow_html=True)
+    except Exception as e:
+        # If error occurs, log it but continue execution
+        print(f"Error setting favicon: {e}")
 
 def show_footer():
     """
@@ -28,28 +74,3 @@ def show_footer():
         """,
         unsafe_allow_html=True
     )
-
-
-# Function to set favicon with explicit HTML
-def set_favicon():
-    try:
-        # Read the logo file
-        with open("assets/LinearLeap_logo.png", "rb") as f:
-            logo_data = f.read()
-        
-        # Encode the image to base64
-        b64_logo = base64.b64encode(logo_data).decode()
-        
-        # Create the favicon HTML
-        favicon_html = f"""
-        <link rel="shortcut icon" href="data:image/png;base64,{b64_logo}">
-        """
-        
-        # Inject the favicon HTML
-        st.markdown(favicon_html, unsafe_allow_html=True)
-    except Exception as e:
-        print(f"Error setting favicon: {e}")
-        # Fall back to text icon if image fails
-        pass
-
-# Add this function to ui_components.py, then call it in app.py before st.set_page_config
