@@ -139,3 +139,47 @@ footer {
     border-top: 1px solid #eee;
     margin-top: 40px;
 }
+
+
+/* LinearLeap custom styles */
+
+/* Logo styling for top-right corner */
+.logo-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.logo-container img {
+    max-height: 80px;
+}
+
+/* Landing page logo styling */
+.landing-logo {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.landing-logo img {
+    max-height: 150px;
+}
+
+/* Hide default Streamlit elements */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+/* Button styling */
+.stButton>button {
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+/* Layout adjustments */
+.block-container {
+    padding-top: 1rem;
+}
