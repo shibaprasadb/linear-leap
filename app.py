@@ -1,15 +1,24 @@
 import streamlit as st
+import os
+
+# Import UI components
+from utils.ui_components import load_css, set_favicon
 
 # Setup page configuration FIRST, before any other imports or Streamlit commands
 st.set_page_config(
     page_title="LinearLeap",
-    page_icon="📈",
+    page_icon="📈",  # Use a text emoji as fallback
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
+# Set custom favicon (works better than page_icon)
+set_favicon()
+
+# Load custom CSS
+load_css()
+
 # Import everything else AFTER setting the page config
-#from config import PAGE_CONFIG
 from navigation.navbar import display_navigation_banner
 from views.landing import show_landing_page
 from views.data_input import show_data_input
@@ -60,6 +69,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-

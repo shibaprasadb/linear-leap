@@ -1,10 +1,39 @@
 import streamlit as st
 from utils.ui_components import show_footer
+import os
+import base64
+
+def get_image_as_base64(image_path):
+    """
+    Convert an image to base64 encoding.
+    """
+    try:
+        with open(image_path, "rb") as img_file:
+            return base64.b64encode(img_file.read()).decode()
+    except Exception as e:
+        print(f"Error encoding image: {e}")
+        return ""
 
 def show_landing_page():
     """
     Display the landing page of the LinearLeap application.
     """
+    # Add logo at the top right using direct HTML with base64 encoding
+    try:
+        logo_path = "assets/LinearLeap_logo.png"
+        if os.path.exists(logo_path):
+            logo_base64 = get_image_as_base64(logo_path)
+            st.markdown(
+                f"""
+                <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                    <img src="data:image/png;base64,{logo_base64}" width="150px">
+                </div>
+                """, 
+                unsafe_allow_html=True
+            )
+    except Exception as e:
+        print(f"Error displaying logo: {e}")
+    
     # Main content in the center column
     col1, col2, col3 = st.columns([1, 2, 1])
     
