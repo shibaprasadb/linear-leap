@@ -2,21 +2,21 @@ import streamlit as st
 import os
 
 # Import UI components
-from utils.ui_components import load_css, set_favicon
+from utils.ui_components import load_css, set_page_favicon
 
 # Setup page configuration FIRST, before any other imports or Streamlit commands
 st.set_page_config(
     page_title="LinearLeap",
-    page_icon="📈",  # Use a text emoji as fallback
+    page_icon="📈",  # Use a default icon that will be replaced
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Set custom favicon (works better than page_icon)
-set_favicon()
-
 # Load custom CSS
 load_css()
+
+# Set the favicon (needs to be after page config)
+set_page_favicon()
 
 # Import everything else AFTER setting the page config
 from navigation.navbar import display_navigation_banner
@@ -45,6 +45,9 @@ if 'regression_type' not in st.session_state:
 
 # Main app logic
 def main():
+    # Always set the favicon on every run (helps with page refreshes)
+    set_page_favicon()
+    
     if st.session_state.page == 'landing':
         show_landing_page()
     else:
