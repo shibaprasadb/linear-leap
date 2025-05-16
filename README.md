@@ -107,4 +107,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Contact
 
-If you have any questions or feedback, please reach out to shibaprasad dot b dot mail at gmail.com
+If you have any questions or feedback, please reach out to shibaprasad.b.mail@gmail.com
