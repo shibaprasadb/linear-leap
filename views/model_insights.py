@@ -87,56 +87,371 @@ def show_model_insights():
 
 def show_linear_summary():
     """
-    Display summary for simple linear regression model (placeholder).
+    Display summary for simple linear regression model with focus on interpretation.
     """
     st.markdown("### Simple Linear Regression Summary")
     
+    # Check if we have the necessary data
+    if 'model' not in st.session_state:
+        st.warning("Please train a model first to see the summary.")
+        return
+    
+    # Get data from session state
+    model = st.session_state.model
+    input_var = st.session_state.input_var
+    target_var = st.session_state.target_var
+    
     # Model equation
     st.markdown("#### Model Equation")
-    st.info("This section will display the model equation and explanation of coefficients.")
+    
+    if hasattr(model, 'coef_') and hasattr(model, 'intercept_'):
+        coef = model.coef_[0]
+        intercept = model.intercept_
+        
+        # Format the equation
+        equation = f"{target_var} = {intercept:.4f} + {coef:.4f} × {input_var}"
+        
+        # Display equation in LaTeX format for better presentation
+        st.latex(equation)
+        
+        # Get CV results if available
+        if 'coef_std' in st.session_state and 'intercept_std' in st.session_state:
+            coef_std = st.session_state.coef_std
+            intercept_std = st.session_state.intercept_std
+            
+            st.markdown(f"""
+            **Coefficient stability:** 
+            - Intercept: {intercept:.4f} ± {intercept_std:.4f}
+            - {input_var}: {coef:.4f} ± {coef_std:.4f}
+            """)
+    else:
+        st.info("Model equation not available.")
     
     # Interpretation
     st.markdown("#### Interpretation")
-    st.info("This section will provide interpretation of the model coefficients and their meaning.")
+    
+    if hasattr(model, 'coef_'):
+        coef = model.coef_[0]
+        
+        # Determine the relationship direction
+        if coef > 0:
+            relationship = "positive"
+            change_direction = "increases"
+        else:
+            relationship = "negative"
+            change_direction = "decreases"
+        
+        # Create interpretation text
+        st.markdown(f"""
+        This model shows a **{relationship} relationship** between {input_var} and {target_var}:
+        
+        - For each one-unit increase in {input_var}, {target_var} {change_direction} by approximately **{abs(coef):.4f} units**
+        - This means that {input_var} has a {"direct" if coef > 0 else "inverse"} effect on {target_var}
+        """)
+        
+        # Add strength interpretation
+        if 'cv_metrics' in st.session_state:
+            r2 = st.session_state.cv_metrics['R²']['mean']
+            
+            if r2 >= 0.7:
+                strength = "strong"
+            elif r2 >= 0.3:
+                strength = "moderate"
+            else:
+                strength = "weak"
+                
+            st.markdown(f"""
+            The model shows a **{strength} predictive power** with R² of {r2:.4f}, meaning that 
+            approximately {r2*100:.1f}% of the variation in {target_var} can be explained by {input_var}.
+            """)
+    else:
+        st.info("Model interpretation not available.")
     
     # Model performance
-    st.markdown("#### Model Performance")
-    st.info("This section will display key performance metrics like R², RMSE, and MAE.")
+    st.markdown("#### Key Performance Metrics")
     
-    # Regression plot
-    st.markdown("#### Regression Plot")
-    st.info("This section will show the regression line plotted against the data points.")
+    if 'cv_metrics' in st.session_state:
+        metrics = st.session_state.cv_metrics
+        
+        # Create columns for metrics
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # R² with interpretation
+            r2 = metrics['R²']['mean']
+            r2_std = metrics['R²']['std']
+            
+            st.metric(
+                "R² Score (Coefficient of Determination)", 
+                f"{r2:.4f}",
+                delta=f"±{r2_std:.4f}"
+            )
+            
+            if r2 >= 0.7:
+                st.success(f"Strong predictive power: Model explains {r2*100:.1f}% of variation in {target_var}")
+            elif r2 >= 0.3:
+                st.info(f"Moderate predictive power: Model explains {r2*100:.1f}% of variation in {target_var}")
+            else:
+                st.warning(f"Limited predictive power: Model explains only {r2*100:.1f}% of variation in {target_var}")
+        
+        with col2:
+            # Error metrics with interpretation
+            rmse = metrics['RMSE']['mean']
+            mae = metrics['MAE']['mean']
+            
+            # Only show one of RMSE or MAE to avoid clutter
+            st.metric(
+                "RMSE (Root Mean Squared Error)",
+                f"{rmse:.4f}",
+                delta=f"±{metrics['RMSE']['std']:.4f}",
+                delta_color="inverse"  # Lower is better
+            )
+            
+            # Add context for the error metric
+            if 'y' in st.session_state:
+                y = st.session_state.y
+                y_range = np.max(y) - np.min(y)
+                error_percentage = (rmse / y_range) * 100
+                
+                st.markdown(f"""
+                RMSE represents the average prediction error in the units of {target_var}.
+                This error is approximately **{error_percentage:.1f}%** of the total range of {target_var}.
+                """)
+    else:
+        st.info("Model performance metrics not available.")
+    
+    # Business insight section
+    st.markdown("#### Business Perspective")
+    
+    if hasattr(model, 'coef_') and 'cv_metrics' in st.session_state:
+        coef = model.coef_[0]
+        r2 = st.session_state.cv_metrics['R²']['mean']
+        
+        # Provide business-oriented interpretation
+        st.markdown(f"""
+        From a business perspective, this model shows that:
+        
+        1. {input_var} is {"an important factor" if r2 >= 0.3 else "a factor"} in determining {target_var}
+        
+        2. The relationship is {"reliable and can be used for planning" if r2 >= 0.7 else 
+            "moderately reliable and should be used with other factors" if r2 >= 0.3 else 
+            "not strong enough to be used alone for decision-making"}
+        
+        3. {"Focusing on strategies that modify " + input_var + " could have meaningful impacts on " + target_var if abs(coef) > 0.1 and r2 >= 0.3 else 
+            "While there is a relationship, other factors likely have stronger influences on " + target_var}
+        """)
+    else:
+        st.info("Business insights not available.")
 
 
 def show_multilinear_summary():
     """
-    Display summary for multiple linear regression model (placeholder).
+    Display summary for multiple linear regression model with focus on interpretation.
     """
     st.markdown("### Multiple Linear Regression Summary")
     
+    # Check if we have the necessary data
+    if 'model' not in st.session_state:
+        st.warning("Please train a model first to see the summary.")
+        return
+    
+    # Get data from session state
+    model = st.session_state.model
+    input_vars = st.session_state.input_vars if 'input_vars' in st.session_state else []
+    target_var = st.session_state.target_var if 'target_var' in st.session_state else "target"
+    
     # Model equation
     st.markdown("#### Model Equation")
-    st.info("This section will display the multilinear regression equation with all coefficients.")
     
-    # Model coefficients
-    st.markdown("#### Model Coefficients")
-    st.info("This section will list all coefficients with their statistical significance.")
+    if hasattr(model, 'coef_') and hasattr(model, 'intercept_'):
+        coefs = model.coef_
+        intercept = model.intercept_
+        
+        # Format the equation
+        equation = f"{target_var} = {intercept:.4f}"
+        for i, var in enumerate(input_vars):
+            sign = " + " if coefs[i] >= 0 else " - "
+            equation += f"{sign}{abs(coefs[i]):.4f} × {var}"
+        
+        # Display equation in LaTeX format for better presentation
+        st.latex(equation)
+        
+        # Get CV results if available
+        if 'coef_means' in st.session_state and 'coef_stds' in st.session_state:
+            coef_means = st.session_state.coef_means
+            coef_stds = st.session_state.coef_stds
+            
+            # Create a nicely formatted table of coefficients
+            coef_df = pd.DataFrame({
+                'Variable': input_vars,
+                'Coefficient': coef_means,
+                'Std Dev': coef_stds,
+                'Coefficient Range': [f"{coef_means[i]:.4f} ± {coef_stds[i]:.4f}" for i in range(len(input_vars))]
+            })
+            
+            st.markdown("**Coefficient Values:**")
+            st.dataframe(coef_df[['Variable', 'Coefficient Range']])
+            
+            # Add intercept info
+            if 'intercept_mean' in st.session_state and 'intercept_std' in st.session_state:
+                intercept_mean = st.session_state.intercept_mean
+                intercept_std = st.session_state.intercept_std
+                st.markdown(f"**Intercept:** {intercept_mean:.4f} ± {intercept_std:.4f}")
+    else:
+        st.info("Model equation not available.")
     
     # Interpretation
-    st.markdown("#### Interpretation")
-    st.info("This section will provide interpretation of the various model coefficients and their meaning.")
+    st.markdown("#### Key Variables and Their Impact")
     
-    # Feature importance
-    st.markdown("#### Feature Importance")
-    st.info("This section will visualize the importance of each feature based on coefficient values.")
+    if hasattr(model, 'coef_'):
+        coefs = model.coef_
+        
+        # Create dataframe for sorting
+        var_impact = pd.DataFrame({
+            'Variable': input_vars,
+            'Coefficient': coefs,
+            'Absolute Impact': np.abs(coefs)
+        }).sort_values('Absolute Impact', ascending=False)
+        
+        # Display top variables
+        for i in range(min(3, len(var_impact))):
+            var = var_impact.iloc[i]['Variable']
+            coef = var_impact.iloc[i]['Coefficient']
+            
+            if coef > 0:
+                relationship = "positive"
+                change_direction = "increases"
+            else:
+                relationship = "negative"
+                change_direction = "decreases"
+            
+            st.markdown(f"""
+            **{i+1}. {var}** (Coefficient: {coef:.4f})
+            - Has a **{relationship}** relationship with {target_var}
+            - For each one-unit increase in {var}, {target_var} {change_direction} by approximately **{abs(coef):.4f} units**
+            - This assumes all other variables remain constant
+            """)
+        
+        # Feature importance visualization
+        st.markdown("#### Variable Importance")
+        
+        # Prepare data for visualization
+        var_impact = var_impact.head(min(10, len(var_impact)))  # Limit to top 10
+        
+        # Create color map based on coefficient sign
+        colors = ['#4285F4' if x >= 0 else '#EA4335' for x in var_impact['Coefficient']]
+        
+        # Create bar chart
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.barh(var_impact['Variable'], var_impact['Absolute Impact'], color=colors)
+        ax.set_xlabel('|Coefficient Value|')
+        ax.set_title('Variable Importance in the Model')
+        
+        # Add a legend
+        from matplotlib.patches import Patch
+        legend_elements = [
+            Patch(facecolor='#4285F4', label='Positive Effect'),
+            Patch(facecolor='#EA4335', label='Negative Effect')
+        ]
+        ax.legend(handles=legend_elements)
+        
+        st.pyplot(fig)
+    else:
+        st.info("Model interpretation not available.")
     
     # Model performance
-    st.markdown("#### Model Performance")
-    st.info("This section will display key performance metrics like R², RMSE, and MAE.")
+    st.markdown("#### Key Performance Metrics")
     
-    # Actual vs predicted
-    st.markdown("#### Actual vs Predicted Values")
-    st.info("This section will show a scatter plot of actual vs predicted values.")
+    if 'cv_metrics' in st.session_state:
+        metrics = st.session_state.cv_metrics
+        
+        # Create columns for metrics
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # R² with interpretation
+            r2 = metrics['R²']['mean']
+            r2_std = metrics['R²']['std']
+            
+            st.metric(
+                "R² Score", 
+                f"{r2:.4f}",
+                delta=f"±{r2_std:.4f}"
+            )
+            
+            if r2 >= 0.7:
+                st.success(f"Strong predictive power: Model explains {r2*100:.1f}% of variation")
+            elif r2 >= 0.3:
+                st.info(f"Moderate predictive power: Model explains {r2*100:.1f}% of variation")
+            else:
+                st.warning(f"Limited predictive power: Model explains only {r2*100:.1f}% of variation")
+        
+        with col2:
+            # Error metrics with interpretation
+            rmse = metrics['RMSE']['mean']
+            
+            st.metric(
+                "RMSE (Root Mean Squared Error)",
+                f"{rmse:.4f}",
+                delta=f"±{metrics['RMSE']['std']:.4f}",
+                delta_color="inverse"  # Lower is better
+            )
+            
+            # Add context for the error metric
+            if 'y' in st.session_state:
+                y = st.session_state.y
+                y_range = np.max(y) - np.min(y)
+                error_percentage = (rmse / y_range) * 100
+                
+                st.markdown(f"""
+                RMSE represents the average prediction error in the units of {target_var}.
+                This error is approximately **{error_percentage:.1f}%** of the total range of {target_var}.
+                """)
+    else:
+        st.info("Model performance metrics not available.")
+    
+    # Business insight section
+    st.markdown("#### Business Perspective")
+    
+    if hasattr(model, 'coef_') and 'cv_metrics' in st.session_state:
+        r2 = st.session_state.cv_metrics['R²']['mean']
+        
+        # Prepare data for top positive and negative influencers
+        coefs = model.coef_
+        pos_idx = np.argsort(-coefs)[:3]  # Top 3 positive coefficients
+        neg_idx = np.argsort(coefs)[:3]    # Top 3 negative coefficients
+        
+        # Filter out zero or insignificant coefficients
+        pos_drivers = [input_vars[i] for i in pos_idx if coefs[i] > 0.01]
+        neg_drivers = [input_vars[i] for i in neg_idx if coefs[i] < -0.01]
+        
+        # Provide business-oriented interpretation
+        st.markdown(f"""
+        From a business perspective, this model shows that:
+        
+        1. {input_vars[np.argmax(np.abs(coefs))]} has the strongest influence on {target_var}
+        
+        2. The model {'explains a substantial portion' if r2 >= 0.7 else 
+           'explains a moderate portion' if r2 >= 0.3 else 
+           'explains only a small portion'} of what drives {target_var}
+        """)
+        
+        if pos_drivers:
+            pos_drivers_list = ", ".join(pos_drivers)
+            st.markdown(f"3. **Positive Drivers:** {pos_drivers_list}")
+            
+        if neg_drivers:
+            neg_drivers_list = ", ".join(neg_drivers)
+            st.markdown(f"4. **Negative Drivers:** {neg_drivers_list}")
+        
+        # Add model reliability statement
+        st.markdown(f"""
+        5. This model is {'highly reliable and suitable for decision-making' if r2 >= 0.7 else 
+          'moderately reliable and should be used alongside other inputs' if r2 >= 0.3 else 
+          'of limited reliability and should be used primarily for directional guidance'}
+        """)
+    else:
+        st.info("Business insights not available.")
 
 
 def show_linear_diagnostics():
