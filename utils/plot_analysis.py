@@ -43,10 +43,19 @@ def generate_text_with_image(prompt, image, api_key=API_KEY, model_name="gemini-
             return response.text
         else:
             print(f"Error: {response}")
-            return None
+            return "Error: No text was generated from the API. Please check your API key and quota."
     except Exception as e:
-        print(f"An error occurred: {e}")
-        return None
+        error_message = str(e)
+        # Provide more user-friendly messages for common errors
+        if "invalid api key" in error_message.lower():
+            return "Error: Invalid API key. Please provide a valid Gemini API key."
+        elif "quota exceeded" in error_message.lower() or "rate limit" in error_message.lower():
+            return "Error: API quota exceeded. Please try again later or use your own API key."
+        elif "not available" in error_message.lower() and "model" in error_message.lower():
+            return f"Error: The model '{model_name}' is not available. Please try a different model."
+        else:
+            return f"Error generating analysis: {error_message}"
+
 
 def image_to_bytes(image):
     """
