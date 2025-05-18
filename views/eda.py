@@ -4,57 +4,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
-import os
-
 from utils.plot_analysis import plot_to_pil, generate_text_with_image, image_to_bytes
 
 # Get API key from Streamlit secrets
-GEMINI_API_KEY = st.secrets.get("GEMINI_API_KEY")
-GEMINI_MODEL_NAME = "gemini-2.0-flash"
-
-if not GEMINI_API_KEY:
-    st.warning("GEMINI_API_KEY not found in environment variables. Some features may not work.")
-
-def show_eda():
-    """
-    Display the Exploratory Data Analysis (EDA) page with different analyses
-    based on the selected regression type.
-    """
-    st.markdown("## Exploratory Data Analysis")
-    
-    # Check if data is available
-    if st.session_state.data is None:
-        st.warning("No data available. Please upload data in the Data Input section.")
-        if st.button("Go to Data Input"):
-            st.session_state.view = "data_input"
-            st.rerun()
-        return
-    
-    data = st.session_state.data
-    target = st.session_state.target_column
-    inputs = st.session_state.input_columns
-    regression_type = st.session_state.regression_type
-    
-    # Check if variables are selected
-    if not target or not inputs:
-        st.warning("Target or input variables not selected. Please complete variable selection in Data Input section.")
-        if st.button("Go to Data Input"):
-            st.session_state.view = "data_input"
-            st.rerun()
-        return
-    
-    # Display different EDA based on regression type
-    if regression_type == 'linear':
-        show_linear_eda(data, inputs[0], target)
-    else:
-        show_multilinear_eda(data, inputs, target)
-    
-    # Button to proceed to model training
-    st.markdown("---")
-    if st.button("Proceed to Model Training", key="proceed_to_training", use_container_width=True):
-        st.session_state.view = "model_training"
-        st.rerun()
-
+try:
+    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+    GEMINI_MODEL_NAME = "gemini-2.0-flash"
+except Exception as e:
+    st.warning("Gemini API key not found in Streamlit secrets. AI analysis will not be available.")
+    GEMINI_API_KEY = None
+    GEMINI_MODEL_NAME = "gemini-2.0-flash"
 
 def detect_outliers(x, y, threshold=3.0):
     """
@@ -111,6 +70,127 @@ def detect_outliers(x, y, threshold=3.0):
     return result
 
 
+def get_cached_ai_analysis(data, var1, var2, cache_key=None):
+    """
+    Get AI analysis for distribution, using session state caching to avoid redundant API calls.
+    
+    Parameters:
+    -----------
+    data : pandas.DataFrame
+        The dataset to analyze
+    var1 : str
+        First variable name
+    var2 : str
+        Second variable name
+    cache_key : str, optional
+        Custom cache key. If None, will generate based on variables
+        
+    Returns:
+    --------
+    str
+        The AI-generated analysis text
+    """
+    # Generate a cache key if not provided
+    if cache_key is None:
+        # Create a unique key based on the data and variables
+        # We hash a small sample of the data to avoid storing large dataframes in the key
+        data_hash = hash(str(data[[var1, var2]].head(5).to_dict()))
+        cache_key = f"ai_analysis_{var1}_{var2}_{data_hash}"
+    
+    # Check if analysis is already cached in session state
+    if cache_key in st.session_state:
+        # Return cached analysis
+        return st.session_state[cache_key]
+    
+    # If not cached, generate the analysis
+    try:
+        # Create distribution plots
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+        
+        # Input variable histogram
+        sns.histplot(data[var1], kde=True, ax=ax1)
+        ax1.set_title(f"Distribution of {var1}")
+        
+        # Target variable histogram
+        sns.histplot(data[var2], kde=True, ax=ax2)
+        ax2.set_title(f"Distribution of {var2}")
+        
+        plt.tight_layout()
+        
+        # Get the current figure
+        current_fig = plt.gcf()
+        
+        # Convert to PIL image
+        pil_image = plot_to_pil(current_fig)
+        
+        # Define the prompt for Gemini
+        prompt = """
+        Summarise these distributions.
+
+        Check for these things: Are they multimodal, bimodal or normal? What could be the business implications of these?
+        Highlight the numbers -> where is the peak? Which number is commonly occuring?
+        Summarise them in short bullet points.
+
+        For each of the variables make two bullet points:
+        Shape: Highlight what the shape looks like
+        Business Implications : What could be the business implication of it.
+        """
+        
+        # Generate the analysis
+        analysis = generate_text_with_image(prompt, pil_image, GEMINI_API_KEY, model_name=GEMINI_MODEL_NAME)
+        
+        # Cache the result in session state
+        if analysis:
+            st.session_state[cache_key] = analysis
+            return analysis
+        else:
+            return "AI analysis could not be generated. Please check your API key."
+            
+    except Exception as e:
+        return f"Error generating AI analysis: {str(e)}"
+
+def show_eda():
+    """
+    Display the Exploratory Data Analysis (EDA) page with different analyses
+    based on the selected regression type.
+    """
+    st.markdown("## Exploratory Data Analysis")
+    
+    # Check if data is available
+    if st.session_state.data is None:
+        st.warning("No data available. Please upload data in the Data Input section.")
+        if st.button("Go to Data Input"):
+            st.session_state.view = "data_input"
+            st.rerun()
+        return
+    
+    data = st.session_state.data
+    target = st.session_state.target_column
+    inputs = st.session_state.input_columns
+    regression_type = st.session_state.regression_type
+    
+    # Check if variables are selected
+    if not target or not inputs:
+        st.warning("Target or input variables not selected. Please complete variable selection in Data Input section.")
+        if st.button("Go to Data Input"):
+            st.session_state.view = "data_input"
+            st.rerun()
+        return
+    
+    # Display different EDA based on regression type
+    if regression_type == 'linear':
+        show_linear_eda(data, inputs[0], target)
+    else:
+        show_multilinear_eda(data, inputs, target)
+    
+    # Button to proceed to model training
+    st.markdown("---")
+    if st.button("Proceed to Model Training", key="proceed_to_training", use_container_width=True):
+        st.session_state.view = "model_training"
+        st.rerun()
+
+# Rest of your existing code...
+
 def show_linear_eda(data, input_var, target_var):
     """
     Display EDA for simple linear regression.
@@ -121,6 +201,7 @@ def show_linear_eda(data, input_var, target_var):
     tab1, tab2 = st.tabs(["Summary Statistics", "Data Visualization"])
     
     with tab1:
+        # Tab 1 code remains unchanged...
         st.markdown("#### Summary Statistics")
         
         # Basic statistics for each variable
@@ -254,6 +335,8 @@ def show_linear_eda(data, input_var, target_var):
         
         # Histograms
         st.markdown("#### Distributions")
+        
+        # Plot distributions
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
         
         # Input variable histogram
@@ -267,52 +350,30 @@ def show_linear_eda(data, input_var, target_var):
         plt.tight_layout()
         st.pyplot(fig)
         
-        # AI Analysis of distributions
+        # AI Analysis of distributions - MODIFIED TO USE CACHING
         with st.spinner("Analyzing distributions with AI..."):
-            try:
-                # Save the current figure to pass to Gemini API
-                # We need to get the current figure object explicitly
-                current_fig = plt.gcf()  # Get current figure
-                
-                # Convert the matplotlib figure to PIL Image
-                pil_image = plot_to_pil(current_fig)
-                
-                # Define the prompt for Gemini
-                prompt = """
-                Summarise these distributions.
-
-                Check for these things: Are they multimodal, bimodal or normal? What could be the business implications of these?
-
-                Summarise them in short bullet points.
-
-                For each of these parameters make two bullet points:
-                Shape
-                Business Implications
-                """
-                
-                # Get AI analysis
-                ai_analysis = generate_text_with_image(prompt, pil_image, GEMINI_API_KEY, model_name=GEMINI_MODEL_NAME)
-                
-                # Display AI analysis
-                if ai_analysis:
-                    st.markdown("### Analysis of Distributions (GenAI generated) ")
-                    st.markdown(ai_analysis)
-                else:
-                    st.warning("AI analysis could not be generated. Please check your API key.")
-            except Exception as e:
-                st.error(f"Error generating AI analysis: {str(e)}")
+            # Get cached or new AI analysis
+            ai_analysis = get_cached_ai_analysis(data, input_var, target_var)
+            
+            # Display AI analysis
+            if ai_analysis and "Error" not in ai_analysis:
+                st.markdown("### Analysis of Distributions (GenAI powered) ")
+                st.markdown(ai_analysis)
+            else:
+                st.warning(ai_analysis)
 
 
 def show_multilinear_eda(data, input_vars, target_var):
     """
     Display EDA for multiple linear regression.
     """
-    # [Keep multilinear_eda implementation as is]
+    # [Keep multilinear_eda implementation and modify the AI analysis part]
     st.markdown("### Multiple Linear Regression EDA")
     
     # Display tabs for different EDA aspects
     tab1, tab2, tab3, tab4 = st.tabs(["Summary Statistics", "Data Visualization", "Correlation Analysis", "Multicollinearity"])
     
+    # Tab 1 implementation remains unchanged...
     with tab1:
         st.markdown("#### Summary Statistics")
         
@@ -374,40 +435,18 @@ def show_multilinear_eda(data, input_vars, target_var):
         plt.tight_layout()
         st.pyplot(fig)
         
-        # AI Analysis of distributions for multilinear
+        # AI Analysis of distributions for multilinear - MODIFIED TO USE CACHING
         with st.spinner("Analyzing distributions with AI..."):
-            try:
-                # Save the current figure to pass to Gemini API
-                # We need to get the current figure object explicitly
-                current_fig = plt.gcf()  # Get current figure
-                
-                # Convert the matplotlib figure to PIL Image
-                pil_image = plot_to_pil(current_fig)
-                
-                # Define the prompt for Gemini
-                prompt = """
-                Summarise these distributions.
-
-                Check for these things: Are they multimodal, bimodal or normal? What could be the business implications of these?
-
-                Summarise them in short bullet points.
-
-                For each of these parameters make two bullet points:
-                Shape
-                Business Implications
-                """
-                
-                # Get AI analysis
-                ai_analysis = generate_text_with_image(prompt, pil_image, GEMINI_API_KEY)
-                
-                # Display AI analysis
-                if ai_analysis:
-                    st.markdown("### AI Analysis of Distributions")
-                    st.markdown(ai_analysis)
-                else:
-                    st.warning("AI analysis could not be generated. Please check your API key.")
-            except Exception as e:
-                st.error(f"Error generating AI analysis: {str(e)}")
+            # Create a cache key including the selected variable
+            # Get cached or new AI analysis
+            ai_analysis = get_cached_ai_analysis(data, selected_var, target_var)
+            
+            # Display AI analysis
+            if ai_analysis and "Error" not in ai_analysis:
+                st.markdown("### AI Analysis of Distributions")
+                st.markdown(ai_analysis)
+            else:
+                st.warning(ai_analysis)
         
         # Pairplot (optional for datasets with many variables)
         if len(input_vars) <= 5 and st.checkbox("Show pairplot (may be slow for large datasets)", value=False):
@@ -417,6 +456,7 @@ def show_multilinear_eda(data, input_vars, target_var):
             fig.fig.suptitle("Pairwise Relationships", y=1.02)
             st.pyplot(fig.fig)
     
+    # Tab 3 implementation remains unchanged...
     with tab3:
         st.markdown("#### Correlation Analysis")
         
@@ -441,6 +481,7 @@ def show_multilinear_eda(data, input_vars, target_var):
         ax.set_title("Correlation Heatmap")
         st.pyplot(fig)
     
+    # Tab 4 implementation remains unchanged...
     with tab4:
         st.markdown("#### Multicollinearity Analysis")
         
