@@ -84,7 +84,6 @@ def show_model_insights():
     # Add footer
     show_footer()
 
-
 def show_linear_summary():
     """
     Display summary for simple linear regression model with focus on interpretation.
@@ -104,9 +103,10 @@ def show_linear_summary():
     # Model equation
     st.markdown("#### Model Equation")
     
-    if hasattr(model, 'coef_') and hasattr(model, 'intercept_'):
-        coef = model.coef_[0]
-        intercept = model.intercept_
+    # Use cross-validated values instead of direct model coefficients
+    if 'coef_mean' in st.session_state and 'intercept_mean' in st.session_state:
+        coef = st.session_state.coef_mean
+        intercept = st.session_state.intercept_mean
         
         # Format the equation
         equation = f"{target_var} = {intercept:.4f} + {coef:.4f} × {input_var}"
@@ -130,8 +130,9 @@ def show_linear_summary():
     # Interpretation
     st.markdown("#### Interpretation")
     
-    if hasattr(model, 'coef_'):
-        coef = model.coef_[0]
+    # Use cross-validated coefficient for interpretation
+    if 'coef_mean' in st.session_state:
+        coef = st.session_state.coef_mean
         
         # Determine the relationship direction
         if coef > 0:
@@ -223,8 +224,9 @@ def show_linear_summary():
     # Business insight section
     st.markdown("#### Business Perspective")
     
-    if hasattr(model, 'coef_') and 'cv_metrics' in st.session_state:
-        coef = model.coef_[0]
+    # Use cross-validated coefficient for business insights
+    if 'coef_mean' in st.session_state and 'cv_metrics' in st.session_state:
+        coef = st.session_state.coef_mean
         r2 = st.session_state.cv_metrics['R²']['mean']
         
         # Provide business-oriented interpretation
