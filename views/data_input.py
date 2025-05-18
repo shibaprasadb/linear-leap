@@ -10,6 +10,51 @@ def show_data_input():
     st.markdown("## Data Input")
     st.markdown("Upload your CSV file and select the variables for analysis.")
     
+    # API Configuration section in an expander
+    with st.expander("### API Configuration (Optional)"):
+        st.markdown("#### Gemini API Settings for AI-powered analysis")
+        
+        use_own_api = st.radio(
+            "Do you want to use your own API key?",
+            options=["Yes (Recommended)", "No"],
+            index=1,  # Default to "No"
+            help="If you have your own Google Gemini API key, using it is recommended for better performance and to avoid rate limiting."
+        )
+        
+        if use_own_api == "Yes (Recommended)":
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                user_api_key = st.text_input(
+                    "Your Gemini API Key",
+                    type="password",
+                    help="Enter your Gemini API key. Your key is stored only in this session and not saved anywhere."
+                )
+            
+            with col2:
+                user_model_name = st.selectbox(
+                    "Gemini Model",
+                    options=["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash", "gemini-2.0-pro"],
+                    index=2,  # Default to gemini-2.0-flash
+                    help="Select which Gemini model to use. Flash models are faster, Pro models may provide more detailed analysis."
+                )
+            
+            # Store in session state if provided
+            if user_api_key:
+                st.session_state.user_api_key = user_api_key
+                st.session_state.user_model_name = user_model_name
+                st.success("API settings saved for this session.")
+            else:
+                st.warning("Please provide an API key or select 'No' to use the default key.")
+        else:
+            # If user chooses not to use their own key, ensure we remove any previously set keys
+            if 'user_api_key' in st.session_state:
+                del st.session_state.user_api_key
+            if 'user_model_name' in st.session_state:
+                del st.session_state.user_model_name
+            
+            st.info("Using the application's default API key. Note that this may have rate limitations during peak usage.")
+    
     # File uploader
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     
@@ -158,5 +203,3 @@ def load_multilinear_sample_data():
     st.session_state.target_column = 'Target'
     st.session_state.input_columns = ['Feature1', 'Feature2', 'Feature3']
     st.session_state.regression_type = 'multilinear'
-
-

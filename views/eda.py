@@ -136,8 +136,17 @@ def get_cached_ai_analysis(data, var1, var2, cache_key=None):
         Business Implications : What could be the business implication of it.
         """
         
+        # Check if user has provided API key
+        if 'user_api_key' in st.session_state and st.session_state.user_api_key:
+            api_key = st.session_state.user_api_key
+            model_name = st.session_state.user_model_name
+        else:
+            # Fall back to application default
+            api_key = GEMINI_API_KEY
+            model_name = GEMINI_MODEL_NAME
+        
         # Generate the analysis
-        analysis = generate_text_with_image(prompt, pil_image, GEMINI_API_KEY, model_name=GEMINI_MODEL_NAME)
+        analysis = generate_text_with_image(prompt, pil_image, api_key, model_name=model_name)
         
         # Cache the result in session state
         if analysis:
@@ -188,8 +197,6 @@ def show_eda():
     if st.button("Proceed to Model Training", key="proceed_to_training", use_container_width=True):
         st.session_state.view = "model_training"
         st.rerun()
-
-# Rest of your existing code...
 
 def show_linear_eda(data, input_var, target_var):
     """
