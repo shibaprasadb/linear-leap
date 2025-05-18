@@ -69,7 +69,7 @@ def show_footer():
         """
         <div style='text-align: center; color: #1E3A8A; padding: 15px; margin-top: 30px; 
                     font-weight: 500; font-family: sans-serif; letter-spacing: 0.5px;'>
-            For feedback or suggestions: shibaprasad[dot]b[dot]mail[at]gmail.com
+            For feedback or suggestions: shibaprasad.b.mail@gmail.com
         </div>
         """,
         unsafe_allow_html=True
