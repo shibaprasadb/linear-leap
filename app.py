@@ -1,13 +1,14 @@
 import streamlit as st
 import os
 
-# Import UI components
-from utils.ui_components import load_css, set_page_favicon
+# Import the CSS loader
+from utils.ui_components import load_css
 
 # Setup page configuration FIRST, before any other imports or Streamlit commands
+# Use the LinearLeap logo as the page icon
 st.set_page_config(
     page_title="LinearLeap",
-    page_icon="📈",  # Use a default icon that will be replaced
+    page_icon="assets/LinearLeap_logo.png", 
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -15,17 +16,16 @@ st.set_page_config(
 # Load custom CSS
 load_css()
 
-# Set the favicon (needs to be after page config)
-set_page_favicon()
-
 # Import everything else AFTER setting the page config
 from navigation.navbar import display_navigation_banner
 from views.landing import show_landing_page
 from views.data_input import show_data_input
 from views.eda import show_eda
 from views.model_training import show_model_training
-from views.results import show_results
-from views.recommendations import show_recommendation
+# Remove these imports and replace with model_insights
+# from views.results import show_results
+# from views.recommendations import show_recommendation
+from views.model_insights import show_model_insights  # New combined view
 
 # Initialize session state
 if 'page' not in st.session_state:
@@ -45,9 +45,6 @@ if 'regression_type' not in st.session_state:
 
 # Main app logic
 def main():
-    # Always set the favicon on every run (helps with page refreshes)
-    set_page_favicon()
-    
     if st.session_state.page == 'landing':
         show_landing_page()
     else:
@@ -59,8 +56,7 @@ def main():
             'data_input': show_data_input,
             'eda': show_eda,
             'model_training': show_model_training,
-            'results': show_results,
-            'recommendation': show_recommendation
+            'model_insights': show_model_insights  # Replace results and recommendations
         }
         
         # Execute the selected view function

@@ -17,6 +17,5 @@ NAV_OPTIONS = [
     {"name": "Data Input", "icon": "📁", "view": "data_input"},
     {"name": "Exploratory Analysis", "icon": "🔍", "view": "eda"},
     {"name": "Model Training", "icon": "⚙️", "view": "model_training"},
-    {"name": "Results", "icon": "📈", "view": "results"},
-    {"name": "Recommendation", "icon": "🎯", "view": "recommendation"},
+    {"name": "Model Insights", "icon": "📊", "view": "model_insights"},
 ]
