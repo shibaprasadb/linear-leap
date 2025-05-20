@@ -79,8 +79,7 @@ LinearLeap/
 │   ├── data_input.py          # Data upload and selection
 │   ├── eda.py                 # Exploratory data analysis
 │   ├── model_training.py      # Model training interface
-│   ├── results.py             # Results and diagnostics
-│   └── recommendation.py      # Recommendations and insights
+│   └── model_insights.py      # Recommendations and insights
 ├── utils/
 │   ├── linear_regression.py   # Linear regression utilities
 │   ├── multilinear_regression.py  # Multilinear regression utilities

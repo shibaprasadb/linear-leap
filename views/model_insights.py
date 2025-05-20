@@ -84,9 +84,10 @@ def show_model_insights():
     # Add footer
     show_footer()
 
+
 def show_linear_summary():
     """
-    Display summary for simple linear regression model with focus on interpretation.
+    Display summary for simple linear regression model with focus on equation and coefficient stability.
     """
     st.markdown("### Simple Linear Regression Summary")
     
@@ -127,47 +128,6 @@ def show_linear_summary():
     else:
         st.info("Model equation not available.")
     
-    # Interpretation
-    st.markdown("#### Interpretation")
-    
-    # Use cross-validated coefficient for interpretation
-    if 'coef_mean' in st.session_state:
-        coef = st.session_state.coef_mean
-        
-        # Determine the relationship direction
-        if coef > 0:
-            relationship = "positive"
-            change_direction = "increases"
-        else:
-            relationship = "negative"
-            change_direction = "decreases"
-        
-        # Create interpretation text
-        st.markdown(f"""
-        This model shows a **{relationship} relationship** between {input_var} and {target_var}:
-        
-        - For each one-unit increase in {input_var}, {target_var} {change_direction} by approximately **{abs(coef):.4f} units**
-        - This means that {input_var} has a {"direct" if coef > 0 else "inverse"} effect on {target_var}
-        """)
-        
-        # Add strength interpretation
-        if 'cv_metrics' in st.session_state:
-            r2 = st.session_state.cv_metrics['R²']['mean']
-            
-            if r2 >= 0.7:
-                strength = "strong"
-            elif r2 >= 0.3:
-                strength = "moderate"
-            else:
-                strength = "weak"
-                
-            st.markdown(f"""
-            The model shows a **{strength} predictive power** with R² of {r2:.4f}, meaning that 
-            approximately {r2*100:.1f}% of the variation in {target_var} can be explained by {input_var}.
-            """)
-    else:
-        st.info("Model interpretation not available.")
-    
     # Model performance
     st.markdown("#### Key Performance Metrics")
     
@@ -198,9 +158,7 @@ def show_linear_summary():
         with col2:
             # Error metrics with interpretation
             rmse = metrics['RMSE']['mean']
-            mae = metrics['MAE']['mean']
             
-            # Only show one of RMSE or MAE to avoid clutter
             st.metric(
                 "RMSE (Root Mean Squared Error)",
                 f"{rmse:.4f}",
@@ -220,35 +178,11 @@ def show_linear_summary():
                 """)
     else:
         st.info("Model performance metrics not available.")
-    
-    # Business insight section
-    st.markdown("#### Business Perspective")
-    
-    # Use cross-validated coefficient for business insights
-    if 'coef_mean' in st.session_state and 'cv_metrics' in st.session_state:
-        coef = st.session_state.coef_mean
-        r2 = st.session_state.cv_metrics['R²']['mean']
-        
-        # Provide business-oriented interpretation
-        st.markdown(f"""
-        From a business perspective, this model shows that:
-        
-        1. {input_var} is {"an important factor" if r2 >= 0.3 else "a factor"} in determining {target_var}
-        
-        2. The relationship is {"reliable and can be used for planning" if r2 >= 0.7 else 
-            "moderately reliable and should be used with other factors" if r2 >= 0.3 else 
-            "not strong enough to be used alone for decision-making"}
-        
-        3. {"Focusing on strategies that modify " + input_var + " could have meaningful impacts on " + target_var if abs(coef) > 0.1 and r2 >= 0.3 else 
-            "While there is a relationship, other factors likely have stronger influences on " + target_var}
-        """)
-    else:
-        st.info("Business insights not available.")
 
 
 def show_multilinear_summary():
     """
-    Display summary for multiple linear regression model with focus on interpretation.
+    Display summary for multiple linear regression model with focus on equation and coefficient stability.
     """
     st.markdown("### Multiple Linear Regression Summary")
     
@@ -302,65 +236,6 @@ def show_multilinear_summary():
     else:
         st.info("Model equation not available.")
     
-    # Interpretation
-    st.markdown("#### Key Variables and Their Impact")
-    
-    if hasattr(model, 'coef_'):
-        coefs = model.coef_
-        
-        # Create dataframe for sorting
-        var_impact = pd.DataFrame({
-            'Variable': input_vars,
-            'Coefficient': coefs,
-            'Absolute Impact': np.abs(coefs)
-        }).sort_values('Absolute Impact', ascending=False)
-        
-        # Display top variables
-        for i in range(min(3, len(var_impact))):
-            var = var_impact.iloc[i]['Variable']
-            coef = var_impact.iloc[i]['Coefficient']
-            
-            if coef > 0:
-                relationship = "positive"
-                change_direction = "increases"
-            else:
-                relationship = "negative"
-                change_direction = "decreases"
-            
-            st.markdown(f"""
-            **{i+1}. {var}** (Coefficient: {coef:.4f})
-            - Has a **{relationship}** relationship with {target_var}
-            - For each one-unit increase in {var}, {target_var} {change_direction} by approximately **{abs(coef):.4f} units**
-            - This assumes all other variables remain constant
-            """)
-        
-        # Feature importance visualization
-        st.markdown("#### Variable Importance")
-        
-        # Prepare data for visualization
-        var_impact = var_impact.head(min(10, len(var_impact)))  # Limit to top 10
-        
-        # Create color map based on coefficient sign
-        colors = ['#4285F4' if x >= 0 else '#EA4335' for x in var_impact['Coefficient']]
-        
-        # Create bar chart
-        fig, ax = plt.subplots(figsize=(10, 6))
-        ax.barh(var_impact['Variable'], var_impact['Absolute Impact'], color=colors)
-        ax.set_xlabel('|Coefficient Value|')
-        ax.set_title('Variable Importance in the Model')
-        
-        # Add a legend
-        from matplotlib.patches import Patch
-        legend_elements = [
-            Patch(facecolor='#4285F4', label='Positive Effect'),
-            Patch(facecolor='#EA4335', label='Negative Effect')
-        ]
-        ax.legend(handles=legend_elements)
-        
-        st.pyplot(fig)
-    else:
-        st.info("Model interpretation not available.")
-    
     # Model performance
     st.markdown("#### Key Performance Metrics")
     
@@ -411,95 +286,223 @@ def show_multilinear_summary():
                 """)
     else:
         st.info("Model performance metrics not available.")
-    
-    # Business insight section
-    st.markdown("#### Business Perspective")
-    
-    if hasattr(model, 'coef_') and 'cv_metrics' in st.session_state:
-        r2 = st.session_state.cv_metrics['R²']['mean']
-        
-        # Prepare data for top positive and negative influencers
-        coefs = model.coef_
-        pos_idx = np.argsort(-coefs)[:3]  # Top 3 positive coefficients
-        neg_idx = np.argsort(coefs)[:3]    # Top 3 negative coefficients
-        
-        # Filter out zero or insignificant coefficients
-        pos_drivers = [input_vars[i] for i in pos_idx if coefs[i] > 0.01]
-        neg_drivers = [input_vars[i] for i in neg_idx if coefs[i] < -0.01]
-        
-        # Provide business-oriented interpretation
-        st.markdown(f"""
-        From a business perspective, this model shows that:
-        
-        1. {input_vars[np.argmax(np.abs(coefs))]} has the strongest influence on {target_var}
-        
-        2. The model {'explains a substantial portion' if r2 >= 0.7 else 
-           'explains a moderate portion' if r2 >= 0.3 else 
-           'explains only a small portion'} of what drives {target_var}
-        """)
-        
-        if pos_drivers:
-            pos_drivers_list = ", ".join(pos_drivers)
-            st.markdown(f"3. **Positive Drivers:** {pos_drivers_list}")
-            
-        if neg_drivers:
-            neg_drivers_list = ", ".join(neg_drivers)
-            st.markdown(f"4. **Negative Drivers:** {neg_drivers_list}")
-        
-        # Add model reliability statement
-        st.markdown(f"""
-        5. This model is {'highly reliable and suitable for decision-making' if r2 >= 0.7 else 
-          'moderately reliable and should be used alongside other inputs' if r2 >= 0.3 else 
-          'of limited reliability and should be used primarily for directional guidance'}
-        """)
-    else:
-        st.info("Business insights not available.")
 
 
 def show_linear_diagnostics():
     """
-    Display diagnostics for simple linear regression model (placeholder).
+    Display diagnostics for simple linear regression model with diagnostic plots.
     """
     st.markdown("### Model Diagnostics")
     
-    # Residual analysis
-    st.markdown("#### Residual Analysis")
-    st.info("This section will display residual plots to check for patterns.")
+    # Check if necessary data is available
+    if 'model' not in st.session_state or 'X' not in st.session_state or 'y' not in st.session_state:
+        st.warning("Complete model data not available. Please retrain the model.")
+        return
     
-    # Residual distribution
-    st.markdown("#### Residual Distribution")
-    st.info("This section will show the distribution of residuals to check for normality.")
+    # Get data from session state
+    model = st.session_state.model
+    X = st.session_state.X
+    y = st.session_state.y
+    input_var = st.session_state.input_var
+    target_var = st.session_state.target_var
     
-    # Normality test
-    st.markdown("#### Normality Test")
-    st.info("This section will display Q-Q plots and statistical tests for normality.")
+    # Calculate predictions and residuals
+    y_pred = model.predict(X)
+    residuals = y - y_pred
     
-    # Homoscedasticity check
-    st.markdown("#### Homoscedasticity Check")
-    st.info("This section will provide visualizations to check for constant variance of residuals.")
+    # Standardized residuals for better analysis
+    std_residuals = residuals / np.std(residuals)
+    
+    # Residual vs Fitted plot
+    st.markdown("#### 1. Residuals vs Fitted Values")
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.scatter(y_pred, residuals, alpha=0.6)
+    ax.axhline(y=0, color='r', linestyle='--')
+    
+    # Add a smooth line to help identify patterns
+    try:
+        from scipy.stats import gaussian_kde
+        # Sort the data for smooth line
+        sorted_idx = np.argsort(y_pred)
+        sorted_x = y_pred[sorted_idx]
+        sorted_y = residuals[sorted_idx]
+        
+        # Calculate smoothed line using rolling average
+        window_size = max(int(len(sorted_x) * 0.1), 5)  # 10% of data points or at least 5
+        smoothed_y = np.convolve(sorted_y, np.ones(window_size)/window_size, mode='valid')
+        valid_x = sorted_x[window_size-1:len(sorted_x)-window_size+1]
+        valid_smoothed_y = smoothed_y[:len(valid_x)]
+        
+        if len(valid_x) > 0:
+            ax.plot(valid_x, valid_smoothed_y, color='blue', linestyle='-', linewidth=2)
+    except Exception as e:
+        st.warning(f"Could not add smoothed trend line: {e}")
+    
+    ax.set_xlabel("Fitted Values")
+    ax.set_ylabel("Residuals")
+    ax.set_title("Residuals vs Fitted Values")
+    
+    # Add annotations
+    ax.text(0.02, 0.95, "Desired pattern: Random scatter around y=0", 
+            transform=ax.transAxes, fontsize=11, 
+            bbox=dict(facecolor='white', alpha=0.8))
+    
+    st.pyplot(fig)
+    
+    # Analysis of this plot
+    st.markdown("""
+    **What to look for:**
+    - **Random scatter around zero line**: Indicates linearity assumption is met
+    - **Patterns or trends**: May indicate non-linear relationship
+    - **Funnel shape**: May indicate heteroscedasticity (non-constant variance)
+    """)
+    
+    # QQ Plot (Normal probability plot of residuals)
+    st.markdown("#### 2. Q-Q Plot (Normality of Residuals)")
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    from scipy import stats
+    
+    # Create QQ plot
+    stats.probplot(residuals, dist="norm", plot=ax)
+    ax.set_title("Q-Q Plot of Residuals")
+    
+    st.pyplot(fig)
+    
+    # Analysis of this plot
+    st.markdown("""
+    **What to look for:**
+    - **Points following the diagonal line**: Indicates residuals are normally distributed
+    - **Deviations from the line**: Indicate departures from normality
+    - **S-curve pattern**: May indicate skewness in the residuals
+    """)
+    
+    # Add overall diagnostics summary
+    st.markdown("#### Diagnostic Summary")
+    
+    # Basic normality test
+    from scipy import stats
+    
+    try:
+        shapiro_test = stats.shapiro(residuals)
+        shapiro_p = shapiro_test[1]
+        
+        st.markdown(f"""
+        **Normality Test (Shapiro-Wilk):**
+        - p-value: {shapiro_p:.4f}
+        - Interpretation: Residuals are {'normally distributed (p > 0.05)' if shapiro_p > 0.05 else 'not normally distributed (p ≤ 0.05)'}
+        """)
+    except Exception as e:
+        st.warning(f"Could not perform normality test: {e}")
 
 
 def show_multilinear_diagnostics():
     """
-    Display diagnostics for multiple linear regression model (placeholder).
+    Display diagnostics for multiple linear regression model with diagnostic plots.
     """
     st.markdown("### Model Diagnostics")
     
-    # Residual analysis
-    st.markdown("#### Residual Analysis")
-    st.info("This section will display residual plots to check for patterns.")
+    # Check if necessary data is available
+    if 'model' not in st.session_state or 'X' not in st.session_state or 'y' not in st.session_state:
+        st.warning("Complete model data not available. Please retrain the model.")
+        return
     
-    # Residual distribution
-    st.markdown("#### Residual Distribution")
-    st.info("This section will show the distribution of residuals to check for normality.")
+    # Get data from session state
+    model = st.session_state.model
+    X = st.session_state.X
+    y = st.session_state.y
+    input_vars = st.session_state.input_vars if 'input_vars' in st.session_state else []
+    target_var = st.session_state.target_var if 'target_var' in st.session_state else "target"
     
-    # Normality test
-    st.markdown("#### Normality Test")
-    st.info("This section will display Q-Q plots and statistical tests for normality.")
+    # Calculate predictions and residuals
+    y_pred = model.predict(X)
+    residuals = y - y_pred
     
-    # Multicollinearity check
-    st.markdown("#### Multicollinearity Check")
-    st.info("This section will provide correlation analysis and VIF statistics to check for multicollinearity.")
+    # Standardized residuals for better analysis
+    std_residuals = residuals / np.std(residuals)
+    
+    # Residual vs Fitted plot
+    st.markdown("#### 1. Residuals vs Fitted Values")
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.scatter(y_pred, residuals, alpha=0.6)
+    ax.axhline(y=0, color='r', linestyle='--')
+    
+    # Add a smooth line to help identify patterns
+    try:
+        # Sort the data for smooth line
+        sorted_idx = np.argsort(y_pred)
+        sorted_x = y_pred[sorted_idx]
+        sorted_y = residuals[sorted_idx]
+        
+        # Calculate smoothed line using rolling average
+        window_size = max(int(len(sorted_x) * 0.1), 5)  # 10% of data points or at least 5
+        smoothed_y = np.convolve(sorted_y, np.ones(window_size)/window_size, mode='valid')
+        valid_x = sorted_x[window_size-1:len(sorted_x)-window_size+1]
+        valid_smoothed_y = smoothed_y[:len(valid_x)]
+        
+        if len(valid_x) > 0:
+            ax.plot(valid_x, valid_smoothed_y, color='blue', linestyle='-', linewidth=2)
+    except Exception as e:
+        st.warning(f"Could not add smoothed trend line: {e}")
+    
+    ax.set_xlabel("Fitted Values")
+    ax.set_ylabel("Residuals")
+    ax.set_title("Residuals vs Fitted Values")
+    
+    # Add annotations
+    ax.text(0.02, 0.95, "Desired pattern: Random scatter around y=0", 
+            transform=ax.transAxes, fontsize=11, 
+            bbox=dict(facecolor='white', alpha=0.8))
+    
+    st.pyplot(fig)
+    
+    # Analysis of this plot
+    st.markdown("""
+    **What to look for:**
+    - **Random scatter around zero line**: Indicates linearity assumption is met
+    - **Patterns or trends**: May indicate non-linear relationship
+    - **Funnel shape**: May indicate heteroscedasticity (non-constant variance)
+    """)
+    
+    # QQ Plot (Normal probability plot of residuals)
+    st.markdown("#### 2. Q-Q Plot (Normality of Residuals)")
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    from scipy import stats
+    
+    # Create QQ plot
+    stats.probplot(residuals, dist="norm", plot=ax)
+    ax.set_title("Q-Q Plot of Residuals")
+    
+    st.pyplot(fig)
+    
+    # Analysis of this plot
+    st.markdown("""
+    **What to look for:**
+    - **Points following the diagonal line**: Indicates residuals are normally distributed
+    - **Deviations from the line**: Indicate departures from normality
+    - **S-curve pattern**: May indicate skewness in the residuals
+    """)
+    
+    # Add overall diagnostics summary
+    st.markdown("#### Diagnostic Summary")
+    
+    # Basic normality test
+    from scipy import stats
+    
+    try:
+        shapiro_test = stats.shapiro(residuals)
+        shapiro_p = shapiro_test[1]
+        
+        st.markdown(f"""
+        **Normality Test (Shapiro-Wilk):**
+        - p-value: {shapiro_p:.4f}
+        - Interpretation: Residuals are {'normally distributed (p > 0.05)' if shapiro_p > 0.05 else 'not normally distributed (p ≤ 0.05)'}
+        """)
+    except Exception as e:
+        st.warning(f"Could not perform normality test: {e}")
 
 
 def show_linear_predictions():
