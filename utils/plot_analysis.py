@@ -8,6 +8,37 @@ import base64
 # Default API key - replace with your actual key or environment variable
 API_KEY = "your_api_key_here"
 
+def generate_text(prompt, api_key, model_name="gemini-2.0-flash"):
+    """
+    Generates text using the Gemini API without an image.
+
+    Args:
+        prompt: The text prompt to send to the API.
+        api_key: Your Gemini API key.
+        model_name: The name of the Gemini model to use.
+                   Defaults to "gemini-2.0-flash".
+
+    Returns:
+        The generated text, or None on error.
+    """
+    try:
+        import google.generativeai as genai
+        
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel(model_name)
+        
+        # Send text prompt to the API
+        response = model.generate_content(prompt)
+        
+        if response.text:
+            return response.text
+        else:
+            print(f"Error: {response}")
+            return None
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return f"Error generating text: {str(e)}"
+
 def generate_text_with_image(prompt, image, api_key=API_KEY, model_name="gemini-2.0-flash"):
     """
     Generates text using the Gemini API, including an image.
