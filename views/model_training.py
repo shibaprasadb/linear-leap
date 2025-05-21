@@ -45,8 +45,8 @@ def show_model_training():
     # Button to proceed to results page
     st.markdown("---")
     if 'model' in st.session_state:
-        if st.button("View Results", key="proceed_to_results", use_container_width=True):
-            st.session_state.view = "results"
+        if st.button("View Insights", key="proceed_to_results", use_container_width=True):
+            st.session_state.view = "model_insights"
             st.rerun()
 
 def train_linear_model(data, input_var, target_var):
